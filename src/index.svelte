@@ -1,8 +1,31 @@
 <script>
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { isLoading, t, locale } from 'svelte-i18n'
+  import setupI18N from './lib/i18n'
   import Styles from './styles.svelte'
   import Clock from './clock/Clock.svelte'
 
-  export let title = 'Hello world!!'
+  export let title = 'Hello from component!!'
+  let initialized = false
+
+  const dispatch = createEventDispatcher()
+
+  const unsuscribeLangChange = locale.subscribe(lang => {
+    if (lang) {
+      dispatch('language-change', lang)
+    }
+  })
+
+  onMount(() => {
+    setupI18N()
+    initialized = true
+  })
+
+  onDestroy(() => {
+    unsuscribeLangChange()
+  })
+
+  const changeLang = lang => () => locale.set(lang)
 </script>
 
 <style type="text/scss" lang="scss">
@@ -17,9 +40,19 @@
 
 <Styles />
 
-<h1>{title}</h1>
-<div class="clock-container">
-  <Clock />
-</div>
+{#if $isLoading || !initialized}
+  <p>Please wait...</p>
+{:else}
+  <h1>{title}</h1>
+
+  <p>{$t('text:example-paragraph')}</p>
+
+  <button on:click={changeLang('en')}>EN</button>
+  <button on:click={changeLang('es')}>ES</button>
+
+  <div class="clock-container">
+    <Clock />
+  </div>
+{/if}
 
 <svelte:options tag="svelte-custom-element" />

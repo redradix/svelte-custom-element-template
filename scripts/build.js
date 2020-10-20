@@ -4,6 +4,7 @@ const { babel } = require('@rollup/plugin-babel')
 const injectProcessEnv = require('rollup-plugin-inject-process-env')
 const { nodeResolve } = require('@rollup/plugin-node-resolve')
 const commonjs = require('@rollup/plugin-commonjs')
+const json = require('@rollup/plugin-json')
 const replace = require('@rollup/plugin-replace')
 const livereload = require('rollup-plugin-livereload')
 const terser = require('rollup-plugin-terser').terser
@@ -29,6 +30,8 @@ const outputOptions = {
 }
 
 const commonRollupPlugins = [
+  json(),
+
   // If you have external dependencies installed from
   // npm, you'll most likely need these plugins. In
   // some cases you'll need additional configuration -

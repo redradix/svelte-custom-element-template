@@ -148,7 +148,14 @@ async function buildWebComponent({ nestedCSS, minify }) {
     updatedCode = code.replace(style, `${style}${nestedCSS}`)
   }
 
-  // 4. Write bundles into files
+  // 4. HACK! Fix svelte/transitions in web components
+  updatedCode = updatedCode
+    // Use shadow root instead of document for transition style injecting
+    .replace(/\.ownerDocument/, '.getRootNode()')
+    // Append styles to shadow root
+    .replace(/\.head\.appendChild/, '.appendChild')
+
+  // 5. Write bundles into files
   const fileName = minify
     ? `${outputOptions.file.replace('.js', '.min.js')}`
     : outputOptions.file

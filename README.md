@@ -1,6 +1,6 @@
 # Svelte Custom Element Template
 
-Svelte template for creating custom elements with storybook and i18n configured that uses a custom build script for allowing nested Svelte components and nested styling.
+Svelte template for custom elements with storybook and i18n configured. Allows nested Svelte components, nested styling and Svelte transitions.
 
 TODO:
 - [x] Add [degit](https://github.com/Rich-Harris/degit) script
@@ -9,6 +9,7 @@ TODO:
 - [x] Add i18n
 - [x] Configure storybook
 - [x] SCSS and Sass support
+- [x] Svelte transitions support
 
 ## How to use?
 

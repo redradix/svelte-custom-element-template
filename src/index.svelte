@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { fade } from 'svelte/transition'
   import { isLoading, t, locale } from 'svelte-i18n'
   import setupI18N from './lib/i18n'
   import Styles from './styles.svelte'
@@ -7,6 +8,7 @@
 
   export let title = 'Hello from component!!'
   let initialized = false
+  let visible = true
 
   const dispatch = createEventDispatcher()
 
@@ -50,9 +52,13 @@
   <button on:click={changeLang('en')}>EN</button>
   <button on:click={changeLang('es')}>ES</button>
 
-  <div class="clock-container">
-    <Clock />
-  </div>
+  <button on:click={() => (visible = !visible)}>Show/hide clocky</button>
+
+  {#if visible}
+    <div class="clock-container" transition:fade>
+      <Clock />
+    </div>
+  {/if}
 {/if}
 
 <svelte:options tag="svelte-custom-element" />

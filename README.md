@@ -33,6 +33,7 @@ Svelte current limitations:
 * [Support nested custom elements](https://github.com/sveltejs/svelte/issues/3520)
 * [Nested child components lose their css when the parent is used as a custom element](https://github.com/sveltejs/svelte/issues/4274)
 * [Transitions in custom Elements](https://github.com/sveltejs/svelte/issues/1825)
+* [Context API doesn't work for custom elements](https://github.com/sveltejs/svelte/issues/3422)
 
 ## Available scripts
 

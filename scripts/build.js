@@ -168,7 +168,7 @@ async function buildWebComponent({ nestedCSS, minify }) {
   })
 
   if (minify) {
-    fs.writeFile(fileName.replace('.js', '.js.map'), map, err => {
+    fs.writeFile(fileName.replace('.js', '.js.map'), map.toString(), err => {
       if (err) {
         console.error(err)
         process.exit(1)

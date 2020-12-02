@@ -117,3 +117,6 @@ error.log
 
 # VS Code meta informations
 .vscode/launch.json
+
+# Personal
+dist

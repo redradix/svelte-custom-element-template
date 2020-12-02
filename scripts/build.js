@@ -161,12 +161,18 @@ async function buildWebComponent({ nestedCSS, minify }) {
     : outputOptions.file
 
   fs.writeFile(fileName, updatedCode, err => {
-    if (err) return console.log(err)
+    if (err) {
+      console.error(err)
+      process.exit(1)
+    }
   })
 
   if (minify) {
     fs.writeFile(fileName.replace('.js', '.js.map'), map, err => {
-      if (err) return console.log(err)
+      if (err) {
+        console.error(err)
+        process.exit(1)
+      }
     })
   }
 }
@@ -183,7 +189,8 @@ async function main() {
     // builds minified bundle with sourcemap
     await buildWebComponent({ nestedCSS, minify: true })
   } catch (ex) {
-    console.log(ex)
+    console.error(ex)
+    process.exit(1)
   }
 }
 

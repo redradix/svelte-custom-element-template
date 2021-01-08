@@ -5,7 +5,6 @@
   "main": "src/index.svelte",
   "scripts": {
     "build": "node ./scripts/build.js",
-    "build:open": "node ./scripts/build.js && serve dist",
     "lint": "eslint --ext .js --ext .svelte src/",
     "start": "npm run storybook",
     "storybook": "node ./scripts/pre-storybook.js && start-storybook -s ./.storybook/static -p 8086",
@@ -43,7 +42,6 @@
     "rollup-plugin-terser": "^7.0.0",
     "sass": "^1.26.11",
     "sass-loader": "^10.0.3",
-    "serve": "^11.3.2",
     "shelljs": "^0.8.4",
     "svelte": "^3.26.0",
     "svelte-loader": "^2.13.6",

@@ -1,7 +1,6 @@
 const svelte = require('rollup-plugin-svelte')
 const sveltePreprocess = require('svelte-preprocess')
 const { babel } = require('@rollup/plugin-babel')
-const injectProcessEnv = require('rollup-plugin-inject-process-env')
 const { nodeResolve } = require('@rollup/plugin-node-resolve')
 const commonjs = require('@rollup/plugin-commonjs')
 const json = require('@rollup/plugin-json')
@@ -113,11 +112,6 @@ async function buildWebComponent({ nestedCSS, minify }) {
       }),
 
       ...commonRollupPlugins,
-
-      // replaces the process.env references from the transpiled code
-      injectProcessEnv({
-        NODE_ENV: process.env.NODE_ENV,
-      }),
 
       // Watch the `public` directory and refresh the
       // browser on changes when not in production

@@ -4,6 +4,7 @@ const { babel } = require('@rollup/plugin-babel')
 const { nodeResolve } = require('@rollup/plugin-node-resolve')
 const commonjs = require('@rollup/plugin-commonjs')
 const json = require('@rollup/plugin-json')
+const css = require('rollup-plugin-css-only')
 const replace = require('@rollup/plugin-replace')
 const livereload = require('rollup-plugin-livereload')
 const terser = require('rollup-plugin-terser').terser
@@ -19,99 +20,115 @@ const buildPath = 'dist'
 const entryPoint = `${appPath}/src/index.svelte`
 const entryPointRegexp = /index\.svelte$/
 const moduleName = packageJson.name
+// Replace special characters for allowing scoped packages like "@scope/package"
+const displayModuleName = moduleName.replace('@', '').replace('/', '-')
 const moduleVersion = packageJson.version
+
+// Used for package.json "main" property
+const moduleFile = `${buildPath}/${displayModuleName}.js`
+
+const bundleName = `${displayModuleName}.${moduleVersion}.js`
 
 const outputOptions = {
   sourcemap: true,
   format: 'iife',
   name: 'App',
-  file: `${buildPath}/${moduleName}.${moduleVersion}.js`,
+  file: `${buildPath}/${bundleName}`,
 }
 
-const commonRollupPlugins = [
-  json(),
-
-  // If you have external dependencies installed from
-  // npm, you'll most likely need these plugins. In
-  // some cases you'll need additional configuration -
-  // consult the documentation for details:
-  // https://github.com/rollup/plugins/tree/master/packages/commonjs
-  nodeResolve({
-    browser: true,
-    dedupe: ['svelte'],
-  }),
-
-  commonjs(),
-
-  // transpile to ES2015+
-  babel({
-    extensions: ['.js', '.mjs', '.html', '.svelte'],
-    babelHelpers: 'runtime',
-  }),
-]
-
-async function generateNestedCSS() {
-  let cssChunk
-
+async function buildWebComponent({ minify }) {
   // 1. Create a bundle
   const bundle = await rollup.rollup({
     input: entryPoint,
     plugins: [
       svelte({
-        // all nested child elements are built as normal svelte components
-        customElement: false,
-        exclude: entryPointRegexp,
-        preprocess: sveltePreprocess(),
-        // Extract CSS into a variable
-        css: css => (cssChunk = css.code),
-      }),
-      svelte({
-        customElement: true,
-        include: entryPointRegexp,
-        preprocess: sveltePreprocess(),
-      }),
+        compilerOptions: {
+          dev: false,
 
-      ...commonRollupPlugins,
-    ],
-  })
-
-  // 2. Generate output specific code in-memory
-  // You can call this function multiple times on the same bundle object
-  await bundle.generate(outputOptions)
-
-  // 3. Escape css chunk characters.
-  // For embedding the chunk into the main custom element
-  const escapedCssChunk = cssChunk
-    .replace(/\n/g, '')
-    .replace(/[\\"']/g, '\\$&')
-    .replace(/\u0000/g, '\\0')
-
-  return escapedCssChunk
-}
-
-async function buildWebComponent({ nestedCSS, minify }) {
-  // 1. Create a bundle
-  const bundle = await rollup.rollup({
-    input: entryPoint,
-    plugins: [
-      replace({ 'module-name': moduleName }),
-      svelte({
-        dev: false,
-        // all nested child elements are built as normal svelte components
-        customElement: false,
+          // all nested child elements are built as normal svelte components
+          customElement: false,
+        },
+        emitCss: true,
         exclude: entryPointRegexp,
         preprocess: sveltePreprocess(),
       }),
       svelte({
-        // enable run-time checks when not in production
-        dev: !production,
-        // we're generating a -- Web Component -- from index.svelte
-        customElement: true,
+        compilerOptions: {
+          // enable run-time checks when not in production
+          dev: !production,
+
+          // we're generating a -- Web Component -- from index.svelte
+          customElement: true,
+        },
+        emitCss: false,
         include: entryPointRegexp,
         preprocess: sveltePreprocess(),
       }),
 
-      ...commonRollupPlugins,
+      // HACK! Inject nested CSS into custom element shadow root
+      css({
+        output(nestedCSS, styleNodes, bundle) {
+          const code = bundle[bundleName].code
+          const escapedCssChunk = nestedCSS
+            .replace(/\n/g, '')
+            .replace(/[\\"']/g, '\\$&')
+            .replace(/\u0000/g, '\\0')
+
+          const matches = code.match(
+            minify
+              ? /.shadowRoot.innerHTML='<style>(.*)<\/style>'/
+              : /.shadowRoot.innerHTML = "<style>(.*)<\/style>"/,
+          )
+
+          if (matches && matches[1]) {
+            const style = matches[1]
+            bundle[bundleName].code = code.replace(
+              style,
+              `${style}${escapedCssChunk}`,
+            )
+          } else {
+            throw new Error(
+              "Couldn't shadowRoot <style> tag for injecting styles",
+            )
+          }
+        },
+      }),
+
+      // HACK! Fix svelte/transitions in web components
+
+      // Use shadow root instead of document for transition style injecting
+      replace({
+        '.ownerDocument': '.getRootNode()',
+        delimiters: ['', ''],
+      }),
+
+      // Append styles to shadow root
+      replace({
+        '.head.appendChild': '.appendChild',
+        delimiters: ['', ''],
+      }),
+
+      // END HACK
+
+      json(),
+
+      // If you have external dependencies installed from
+      // npm, you'll most likely need these plugins. In
+      // some cases you'll need additional configuration -
+      // consult the documentation for details:
+      // https://github.com/rollup/plugins/tree/master/packages/commonjs
+      nodeResolve({
+        browser: true,
+        dedupe: ['svelte'],
+      }),
+
+      commonjs(),
+
+      // transpile to ES2015+
+      babel({
+        extensions: ['.js', '.mjs', '.html', '.svelte'],
+        babelHelpers: 'runtime',
+      }),
 
       // Watch the `public` directory and refresh the
       // browser on changes when not in production
@@ -128,41 +145,32 @@ async function buildWebComponent({ nestedCSS, minify }) {
   const { output } = await bundle.generate(outputOptions)
   const { code, map } = output[0]
 
-  // 3. Inject CSS chunk into custom element shadow root
-  const matches = code.match(
-    minify
-      ? /.shadowRoot.innerHTML='<style>(.*)<\/style>'/
-      : /_this.shadowRoot.innerHTML = \"<style>(.*)<\/style>\"/,
-  )
-
-  let updatedCode = code
-
-  if (matches && matches[1]) {
-    const style = matches[1]
-    updatedCode = code.replace(style, `${style}${nestedCSS}`)
-  }
-
-  // 4. HACK! Fix svelte/transitions in web components
-  updatedCode = updatedCode
-    // Use shadow root instead of document for transition style injecting
-    .replace(/\.ownerDocument/, '.getRootNode()')
-    // Append styles to shadow root
-    .replace(/\.head\.appendChild/, '.appendChild')
-
-  // 5. Write bundles into files
+  // 3. Write bundles into files
   const fileName = minify
     ? `${outputOptions.file.replace('.js', '.min.js')}`
     : outputOptions.file
 
-  fs.writeFile(fileName, updatedCode, err => {
+  // Normal bundle
+  fs.writeFile(fileName, code, err => {
     if (err) {
       console.error(err)
       process.exit(1)
     }
   })
 
+  // Only create .map.js when code is minified
   if (minify) {
     fs.writeFile(fileName.replace('.js', '.js.map'), map.toString(), err => {
+      if (err) {
+        console.error(err)
+        process.exit(1)
+      }
+    })
+  }
+
+  // Generic bundle for using as module entry point
+  if (!minify) {
+    fs.writeFile(moduleFile, code, err => {
       if (err) {
         console.error(err)
         process.exit(1)
@@ -175,13 +183,11 @@ async function main() {
   try {
     shell.mkdir('-p', buildPath)
 
-    const nestedCSS = await generateNestedCSS()
-
     // builds readable bundle of the web component
-    await buildWebComponent({ nestedCSS, minify: false })
+    await buildWebComponent({ minify: false })
 
     // builds minified bundle with sourcemap
-    await buildWebComponent({ nestedCSS, minify: true })
+    await buildWebComponent({ minify: true })
   } catch (ex) {
     console.error(ex)
     process.exit(1)

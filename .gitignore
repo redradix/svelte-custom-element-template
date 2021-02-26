@@ -109,7 +109,7 @@ dist/static
 .DS_Store
 
 # static folder to host when spinning up Storybook
-/.storybook/static/*
+#/.storybook/static/*
 
 # basic log files
 access.log

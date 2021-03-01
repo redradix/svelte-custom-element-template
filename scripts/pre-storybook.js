@@ -4,6 +4,7 @@ const shell = require('shelljs')
 const fs = require('fs')
 const path = require('path')
 const rollup = require('rollup')
+const css = require('rollup-plugin-css-only')
 
 const appPath = path.resolve(__dirname, '../')
 const entryPoint = `${appPath}/src/styles.svelte`
@@ -25,10 +26,19 @@ async function injectGlobalStylesToStorybook() {
     input: entryPoint,
     plugins: [
       svelte({
-        customElement: false,
+        compilerOptions: {
+          customElement: false,
+        },
         preprocess: sveltePreprocess(),
         // Extract CSS into a variable
-        css: css => (cssChunk = css.code.replace(/\n/g, '')),
+        emitCss: true,
+      }),
+
+      // HACK! Inject nested CSS into custom element shadow root
+      css({
+        output(nestedCSS, styleNodes, bundle) {
+          cssChunk = nestedCSS
+        },
       }),
     ],
   })

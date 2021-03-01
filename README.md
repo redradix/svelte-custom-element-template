@@ -57,6 +57,7 @@ The global styles for your Svelte component lives inside `/src/styles.svelte`, t
 
 ## Available scripts
 
-* `start`: runs the storybook, this is used when develop because of the live reloading
+* `start`: alias of `yarn storybook`
 * `build`: builds your app as a web component and outputs a minified and a normal version to `/dist`
-* `build:open`: builds your app and also runs a development server for viewing how your compiled component will look like
+* `storybook`: runs the storybook, this is used when develop because of the live reloading
+* `test`: runs all test inside `src/` and tries to build the widget

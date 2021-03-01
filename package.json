@@ -8,7 +8,7 @@
     "lint": "eslint --ext .js --ext .svelte src/",
     "start": "npm run storybook",
     "storybook": "node ./scripts/pre-storybook.js && start-storybook -s ./.storybook/static -p 8086",
-    "test": "jest src && npm run build",
+    "test": "jest src --passWithNoTests && npm run build",
     "test:watch": "npm run test -- --watch"
   },
   "devDependencies": {

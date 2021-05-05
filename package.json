@@ -43,9 +43,9 @@
     "sass": "^1.26.11",
     "sass-loader": "^10.0.3",
     "shelljs": "^0.8.4",
-    "svelte": "^3.26.0",
-    "svelte-loader": "^3.0.0",
-    "svelte-preprocess": "^4.5.1"
+    "svelte": "^3.38.2",
+    "svelte-loader": "^3.1.1",
+    "svelte-preprocess": "^4.7.3"
   },
   "dependencies": {
     "@babel/runtime": "^7.12.1",

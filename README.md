@@ -7,9 +7,9 @@ TODO:
 - [x] Document
 - [ ] Add versioning scripts?
 - [x] Add i18n
-- [x] Configure storybook
+- [x] Configure Storybook
 - [x] SCSS and Sass support
-- [x] Svelte transitions support
+- [x] Svelte Transitions support
 
 ## Usage
 
@@ -53,7 +53,7 @@ Svelte current limitations:
 
 The code of your component lives inside `/src/index.svelte`, this is the main point for either Storybook and the building process. It's important that this file has it's own style tag with content in it, otherwise we cannot inject the styles of your app inside the shadow DOM of the custom element. ([read the build script](./scripts/build.js))
 
-The global styles for your Svelte component lives inside `/src/styles.svelte`, this file is important because we get the compiled CSS from this and inject it in Storybook so you can have global styles in all your stories without the need to duplicate this styles.
+The global styles for your Svelte component lives inside `/src/index.scss` (concretely inside the class `component-styles-wrapper` which is the root class), this file is important because we turn it into compiled CSS and inject it to Storybook so you can have global styles in all your stories without the need to duplicate this styles.
 
 ## Available scripts
 

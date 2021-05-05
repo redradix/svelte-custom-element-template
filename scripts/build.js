@@ -36,7 +36,67 @@ const outputOptions = {
   file: `${buildPath}/${bundleName}`,
 }
 
-async function buildWebComponent({ minify }) {
+const commonRollupPlugins = [
+  json(),
+
+  // If you have external dependencies installed from
+  // npm, you'll most likely need these plugins. In
+  // some cases you'll need additional configuration -
+  // consult the documentation for details:
+  // https://github.com/rollup/plugins/tree/master/packages/commonjs
+  nodeResolve({
+    browser: true,
+    dedupe: ['svelte'],
+  }),
+
+  commonjs(),
+
+  // transpile to ES2015+
+  babel({
+    extensions: ['.js', '.mjs', '.html', '.svelte'],
+    babelHelpers: 'runtime',
+  }),
+]
+
+async function extractCSS() {
+  let cssChunk = ''
+
+  const bundle = await rollup.rollup({
+    input: entryPoint,
+    plugins: [
+      svelte({
+        compilerOptions: {
+          dev: false,
+
+          // all nested child elements are built as normal svelte components
+          customElement: false,
+        },
+        emitCss: true,
+        preprocess: sveltePreprocess(),
+      }),
+
+      // HACK! Inject nested CSS into custom element shadow root
+      css({
+        output(nestedCSS, styleNodes, bundle) {
+          const escapedCssChunk = nestedCSS
+            .replace(/\n/g, '')
+            .replace(/[\\"']/g, '\\$&')
+            .replace(/\u0000/g, '\\0')
+
+          cssChunk = escapedCssChunk
+        },
+      }),
+
+      ...commonRollupPlugins,
+    ],
+  })
+
+  await bundle.generate(outputOptions)
+
+  return cssChunk
+}
+
+async function buildWebComponent({ minify, cssChunk }) {
   // 1. Create a bundle
   const bundle = await rollup.rollup({
     input: entryPoint,
@@ -69,10 +129,6 @@ async function buildWebComponent({ minify }) {
       css({
         output(nestedCSS, styleNodes, bundle) {
           const code = bundle[bundleName].code
-          const escapedCssChunk = nestedCSS
-            .replace(/\n/g, '')
-            .replace(/[\\"']/g, '\\$&')
-            .replace(/\u0000/g, '\\0')
 
           const matches = code.match(
             minify
@@ -82,10 +138,7 @@ async function buildWebComponent({ minify }) {
 
           if (matches && matches[1]) {
             const style = matches[1]
-            bundle[bundleName].code = code.replace(
-              style,
-              `${style}${escapedCssChunk}`,
-            )
+            bundle[bundleName].code = code.replace(style, cssChunk)
           } else {
             throw new Error(
               "Couldn't shadowRoot <style> tag for injecting styles",
@@ -110,25 +163,7 @@ async function buildWebComponent({ minify }) {
 
       // END HACK
 
-      json(),
-
-      // If you have external dependencies installed from
-      // npm, you'll most likely need these plugins. In
-      // some cases you'll need additional configuration -
-      // consult the documentation for details:
-      // https://github.com/rollup/plugins/tree/master/packages/commonjs
-      nodeResolve({
-        browser: true,
-        dedupe: ['svelte'],
-      }),
-
-      commonjs(),
-
-      // transpile to ES2015+
-      babel({
-        extensions: ['.js', '.mjs', '.html', '.svelte'],
-        babelHelpers: 'runtime',
-      }),
+      ...commonRollupPlugins,
 
       // Watch the `public` directory and refresh the
       // browser on changes when not in production
@@ -183,11 +218,13 @@ async function main() {
   try {
     shell.mkdir('-p', buildPath)
 
+    const cssChunk = await extractCSS()
+
     // builds readable bundle of the web component
-    await buildWebComponent({ minify: false })
+    await buildWebComponent({ minify: false, cssChunk })
 
     // builds minified bundle with sourcemap
-    await buildWebComponent({ minify: true })
+    await buildWebComponent({ minify: true, cssChunk })
   } catch (ex) {
     console.error(ex)
     process.exit(1)

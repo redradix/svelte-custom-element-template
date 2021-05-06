@@ -9,7 +9,7 @@ const replace = require('@rollup/plugin-replace')
 const livereload = require('rollup-plugin-livereload')
 const terser = require('rollup-plugin-terser').terser
 const shell = require('shelljs')
-const fs = require('fs')
+const fs = require('fs').promises
 const path = require('path')
 const rollup = require('rollup')
 const packageJson = require('../package.json')
@@ -186,31 +186,16 @@ async function buildWebComponent({ minify, cssChunk }) {
     : outputOptions.file
 
   // Normal bundle
-  fs.writeFile(fileName, code, err => {
-    if (err) {
-      console.error(err)
-      process.exit(1)
-    }
-  })
+  await fs.writeFile(fileName, code)
 
   // Only create .map.js when code is minified
   if (minify) {
-    fs.writeFile(fileName.replace('.js', '.js.map'), map.toString(), err => {
-      if (err) {
-        console.error(err)
-        process.exit(1)
-      }
-    })
+    await fs.writeFile(fileName.replace('.js', '.js.map'), map.toString())
   }
 
   // Generic bundle for using as module entry point
   if (!minify) {
-    fs.writeFile(moduleFile, code, err => {
-      if (err) {
-        console.error(err)
-        process.exit(1)
-      }
-    })
+    await fs.writeFile(moduleFile, code)
   }
 }
 

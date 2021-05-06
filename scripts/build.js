@@ -202,6 +202,7 @@ async function buildWebComponent({ minify, cssChunk }) {
 async function main() {
   try {
     shell.mkdir('-p', buildPath)
+    shell.rm('dist/*')
 
     const cssChunk = await extractCSS()
 

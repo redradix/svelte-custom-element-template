@@ -157,7 +157,7 @@ async function buildWebComponent({ minify, cssChunk }) {
 
       // Append styles to shadow root
       replace({
-        '.head.appendChild': '.appendChild',
+        '.head.appendChild(e': '.appendChild(e',
         delimiters: ['', ''],
       }),
 

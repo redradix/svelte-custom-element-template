@@ -19,13 +19,26 @@
     }
   })
 
+  const fontStyleNode = document.createElement('link')
+
   onMount(() => {
+    // HACK: Font import doesn't work inside shadow-dom.
+    // Read more: https://stackoverflow.com/questions/55382081/using-google-fonts-with-shadow-dom
+    fontStyleNode.type = 'text/css'
+    fontStyleNode.rel = 'stylesheet'
+    fontStyleNode.href =
+      '//fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap'
+    document.head.appendChild(fontStyleNode)
+
     setupI18N()
     initialized = true
   })
 
   onDestroy(() => {
     unsuscribeLangChange()
+
+    // HACK: Font import doesn't work inside shadow-dom.
+    document.head.removeChild(fontStyleNode)
   })
 
   const changeLang = lang => () => locale.set(lang)

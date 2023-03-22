@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2023 Redradix - development@redradix.com
+//
+// SPDX-License-Identifier: MIT
+
 const svelte = require('rollup-plugin-svelte')
 const sveltePreprocess = require('svelte-preprocess')
 const { babel } = require('@rollup/plugin-babel')

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2023 Redradix - development@redradix.com
+//
+// SPDX-License-Identifier: MIT
+
 import { addMessages, getLocaleFromNavigator, init } from 'svelte-i18n'
 
 import en from '../config/translations/en.json'

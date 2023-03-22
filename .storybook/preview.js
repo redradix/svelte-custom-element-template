@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2023 Redradix - development@redradix.com
+//
+// SPDX-License-Identifier: MIT
+
 import '!style-loader!css-loader!sass-loader!../src/index.scss'
 
 import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport'

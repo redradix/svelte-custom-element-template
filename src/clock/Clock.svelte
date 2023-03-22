@@ -1,3 +1,6 @@
+<!--  SPDX-FileCopyrightText: 2023 Redradix - development@redradix.com -->
+<!-- SPDX-License-Identifier: MIT -->
+
 <!-- Copied from: https://svelte.dev/examples#clock -->
 <script>
   import { onMount } from 'svelte'

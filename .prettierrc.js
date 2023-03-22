@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2023 Redradix - development@redradix.com
+//
+// SPDX-License-Identifier: MIT
+
 {
   "arrowParens": "avoid",
   "bracketSpacing": true,

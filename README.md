@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Redradix - development@redradix.com
+
+SPDX-License-Identifier: MIT
+-->
+
 # Svelte Custom Element Template
 
 Svelte template for custom elements with storybook and i18n configured. Allows nested Svelte components, nested styling and Svelte transitions.

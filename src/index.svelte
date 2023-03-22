@@ -1,3 +1,6 @@
+<!--  SPDX-FileCopyrightText: 2023 Redradix - development@redradix.com -->
+<!--  SPDX-License-Identifier: MIT -->
+
 <svelte:options tag="svelte-custom-element" />
 
 <script>

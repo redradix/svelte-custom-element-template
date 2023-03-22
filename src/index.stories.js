@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2023 Redradix - development@redradix.com
+//
+// SPDX-License-Identifier: MIT
+
 import CustomElement from './index.svelte'
 
 export default { title: 'CustomElement' }
